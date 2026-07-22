@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Actor / Producer OS – Career Decision Engine</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --navy-900: #0f1419;
+      --navy-50: #f8f9fa;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #ffffff;
+      color: #111827;
+    }
+
+    .bg-navy-900 {
+      background-color: var(--navy-900);
+    }
+
+    .bg-navy-50 {
+      background-color: var(--navy-50);
+    }
+
+    .text-navy-900 {
+      color: var(--navy-900);
+    }
+
+    .from-navy-900 {
+      --tw-gradient-from: var(--navy-900) var(--tw-gradient-from-position);
+      --tw-gradient-to: rgb(31 41 55 / 0) var(--tw-gradient-to-position);
+      --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+
+    /* Input focus states */
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: 2px solid #f97316;
+      outline-offset: 2px;
+    }
+
+    button:focus-visible {
+      outline: 2px solid #f97316;
+      outline-offset: 2px;
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    const React = window.React;
+    const ReactDOM = window.ReactDOM;
+    const { useState, useEffect, useCallback } = React;
+
+    // ===== TYPE/DATA DEFINITIONS =====
+
+    const STAGE_DEFINITIONS = {
+      stage0: {
+        name: 'Create the Proof',
+        role: 'Actor-Creator',
+        resourceReality: 'Little or no creative income, small or no owned audience, and no meaningful warm industry access',
+        bottomLine: 'There is not enough finished public work to create leverage',
+        graduateBy: 'Finish a credible starter body of work and release proof publicly',
+      },
+      stage1: {
+        name: 'Build the Signal',
+        role: 'Audience Builder',
+        resourceReality: 'Some following, early audience feedback, and first creative income or resource support',
+        bottomLine: 'Work exists, but attention and output are not yet repeatable',
+        graduateBy: 'Prove that a specific kind of work repeatedly earns audience response',
+      },
+      stage2: {
+        name: 'Earn the Credit',
+        role: 'Actor-Producer',
+        resourceReality: 'Meaningful audience proof, some money, credible collaborators, and an emerging external credit',
+        bottomLine: 'Proof exists, but it has not been converted into a financeable package or durable industry validation',
+        graduateBy: 'Turn creative proof into a strong package with external credibility',
+      },
+      stage3: {
+        name: 'Package and Finance',
+        role: 'Lead Producer',
+        resourceReality: 'Industry credit, a credible package, and access to more meaningful capital',
+        bottomLine: 'The project is promising but not yet legally, financially, or operationally ready to greenlight',
+        graduateBy: 'Make one feature fully financeable and production-ready',
+      },
+      stage4: {
+        name: 'Deliver and Leverage',
+        role: 'Working Actor-Producer',
+        resourceReality: 'Real industry credit, released work, more money, and stronger relationships',
+        bottomLine: 'The win is still a one-off unless it makes the next project faster, better, and better financed',
+        graduateBy: 'Deliver the film, capture the leverage it creates, and package the next projects before momentum fades',
+      },
+      stage5: {
+        name: 'Build the Slate',
+        role: 'Creator-Producer / Studio Builder',
+        resourceReality: 'More connections, repeat access to money and talent, a meaningful audience, and a library of proven IP',
+        bottomLine: 'The career still depends on one project at a time',
+        graduateBy: 'Maintain a prioritized 3-project slate with repeatable financing and distribution',
+      },
+    };
+
+    const SEED_DATA = {
+      schemaVersion: '1.0',
+      lastUpdated: new Date().toISOString(),
+      currentStageOverride: null,
+      featureScreenplays: [
+        {
+          id: 'feat1',
+          title: 'The Long Game',
+          genre: 'Drama',
+          targetPages: 120,
+          currentPages: 45,
+          status: 'Drafting',
+          logline: 'A former athlete discovers a second act through coaching and mentorship in a struggling neighborhood.',
+          createdDate: '2024-06-01',
+          startedDate: '2024-06-15',
+          completedDate: null,
+          writingSessions: [
+            { id: 'ws1', featureId: 'feat1', date: '2024-06-15', pagesWritten: 8, notes: 'Opening sequence, establishing tone' },
+            { id: 'ws2', featureId: 'feat1', date: '2024-06-17', pagesWritten: 10, notes: 'Meet the kids, first mentorship moment' },
+            { id: 'ws3', featureId: 'feat1', date: '2024-06-20', pagesWritten: 12, notes: 'Conflict with admin, stakes raised' },
+            { id: 'ws4', featureId: 'feat1', date: '2024-06-25', pagesWritten: 15, notes: 'Mid-point turn, personal reckoning' },
+          ],
+        },
+        {
+          id: 'feat2',
+          title: 'Common Ground',
+          genre: 'Comedy-Drama',
+          targetPages: 110,
+          currentPages: 0,
+          status: 'Not Started',
+          logline: 'Two estranged siblings inherit a community garden and must work together to save it.',
+          createdDate: '2024-06-10',
+          startedDate: null,
+          completedDate: null,
+          writingSessions: [],
+        },
+        {
+          id: 'feat3',
+          title: 'Untitled Project 3',
+          genre: 'TBD',
+          targetPages: 120,
+          currentPages: 0,
+          status: 'Not Started',
+          logline: 'TBD',
+          createdDate: '2024-06-12',
+          startedDate: null,
+          completedDate: null,
+          writingSessions: [],
+        },
+      ],
+      sketchScripts: [
+        {
+          id: 'sketch1',
+          title: 'Morning Ritual',
+          genre: 'Comedy',
+          logline: 'A guy realizes his elaborate morning routine is actually performative for his cat.',
+          status: 'Published',
+          createdDate: '2024-05-01',
+          publishedDate: '2024-05-15',
+          link: 'https://example.com/morning-ritual',
+        },
+        {
+          id: 'sketch2',
+          title: 'Cold Call',
+          genre: 'Drama',
+          logline: 'A recruiter calls the wrong number and opens up to a stranger.',
+          status: 'Published',
+          createdDate: '2024-05-10',
+          publishedDate: '2024-05-22',
+          link: 'https://example.com/cold-call',
+        },
+        {
+          id: 'sketch3',
+          title: 'Parallel Lives',
+          genre: 'Drama',
+          logline: 'Two versions of the same person at different turning points in one scene.',
+          status: 'Produced',
+          createdDate: '2024-05-20',
+          publishedDate: null,
+          link: '',
+        },
+        {
+          id: 'sketch4',
+          title: 'The Callback',
+          genre: 'Comedy',
+          logline: "An actor prepares for an audition he's done 100 times.",
+          status: 'Written',
+          createdDate: '2024-06-01',
+          publishedDate: null,
+          link: '',
+        },
+        {
+          id: 'sketch5',
+          title: 'Last Shift',
+          genre: 'Drama',
+          logline: 'A manager trains his replacement on his last day.',
+          status: 'Idea',
+          createdDate: '2024-06-10',
+          publishedDate: null,
+          link: '',
+        },
+      ],
+      actingClass: {
+        id: 'class1',
+        title: 'Advanced Scene Study',
+        instructor: 'Michael Chen',
+        startDate: '2024-04-01',
+        endDate: null,
+        focusAreas: ['Character Development', 'Subtext', 'Emotional Authenticity'],
+        sessions: [
+          {
+            id: 'act1',
+            date: '2024-04-01',
+            classOrPractice: 'Scene Study Class',
+            focusArea: 'Character Development',
+            notes: 'Worked on Stanislavski method for building character history',
+            practiceAdjustments: 'Will practice creating detailed character bios before each scene work',
+          },
+          {
+            id: 'act2',
+            date: '2024-04-08',
+            classOrPractice: 'Scene Study Class',
+            focusArea: 'Subtext',
+            notes: "Explored what's underneath the dialogue; discovering conflict",
+            practiceAdjustments: 'Will write out subtext notes for all script work',
+          },
+          {
+            id: 'act3',
+            date: '2024-04-15',
+            classOrPractice: 'Solo Practice',
+            focusArea: 'Emotional Authenticity',
+            notes: 'Worked on accessing genuine emotion without forcing',
+            practiceAdjustments: 'Daily 10-minute emotional recall exercises',
+          },
+          {
+            id: 'act4',
+            date: '2024-04-22',
+            classOrPractice: 'Scene Study Class',
+            focusArea: 'Character Development',
+            notes: 'Monologue work; revealing character through voice and physicality',
+            practiceAdjustments: 'Will record monologue work weekly and review for physical patterns',
+          },
+        ],
+        notes: 'Class meets Mondays; focusing on converting study into performance',
+      },
+      relationships: [
+        {
+          id: 'rel1',
+          name: 'Jordan Riley',
+          role: 'DP / Camera',
+          category: 'Collaborator',
+          warmth: 'Active Collaborator',
+          howBradyHelps: 'Leading roles in short projects; on-set collaboration and learning',
+          howTheyHelp: 'Cinematography, equipment access, crew connections',
+          stageRelevance: ['stage0', 'stage1', 'stage2'],
+          warmIntroPath: 'Direct connection; multiple projects together',
+          lastInteraction: '2024-06-20',
+          nextAction: 'Prep lighting for next sketch shoot',
+          nextActionDate: '2024-07-15',
+          notes: 'Reliable collaborator; shares equipment and creative vision',
+        },
+        {
+          id: 'rel2',
+          name: 'Maya Patel',
+          role: 'Editor',
+          category: 'Collaborator',
+          warmth: 'Warm',
+          howBradyHelps: 'Providing raw footage and creative decision authority',
+          howTheyHelp: 'Editorial, sound design, final delivery',
+          stageRelevance: ['stage0', 'stage1', 'stage2'],
+          warmIntroPath: 'Met at film festival; collaborated on two projects',
+          lastInteraction: '2024-06-18',
+          nextAction: 'Review Color Correct pass of last sketch',
+          nextActionDate: '2024-07-10',
+          notes: "Thorough and creative; invested in Brady's work",
+        },
+        {
+          id: 'rel3',
+          name: 'Alex Chen',
+          role: 'Actor / Peer Creator',
+          category: 'Collaborator',
+          warmth: 'Warm',
+          howBradyHelps: 'Lead and supporting roles; co-producing opportunities',
+          howTheyHelp: 'Acting, feedback on scripts and performance, collaborative ideation',
+          stageRelevance: ['stage0', 'stage1', 'stage2', 'stage3'],
+          warmIntroPath: 'Acting class peer; worked together on sketch',
+          lastInteraction: '2024-06-15',
+          nextAction: 'Discuss casting for Feature 1',
+          nextActionDate: '2024-07-20',
+          notes: 'Creatively aligned; interested in feature projects',
+        },
+        {
+          id: 'rel4',
+          name: 'Sarah Williams',
+          role: 'Audience / Social Media',
+          category: 'Growth Collaborator',
+          warmth: 'Familiar',
+          howBradyHelps: 'Compelling creative content for promotion',
+          howTheyHelp: 'Social strategy, audience growth, engagement analysis',
+          stageRelevance: ['stage1', 'stage2'],
+          warmIntroPath: 'Mutual connection through festival community',
+          lastInteraction: '2024-06-10',
+          nextAction: 'Plan content calendar for Q3 releases',
+          nextActionDate: '2024-07-01',
+          notes: 'Early conversations about owned audience building',
+        },
+        {
+          id: 'rel5',
+          name: 'David Ortiz',
+          role: 'Location Owner',
+          category: 'Resource',
+          warmth: 'Familiar',
+          howBradyHelps: 'Provides exposure for his space; credible productions',
+          howTheyHelp: 'Location access; production experience',
+          stageRelevance: ['stage0', 'stage1'],
+          warmIntroPath: 'Met at neighborhood community center',
+          lastInteraction: '2024-06-01',
+          nextAction: 'Confirm availability for August shoot',
+          nextActionDate: '2024-07-15',
+          notes: 'Generous with space; great community connection',
+        },
+      ],
+      hardGates: [],
+      decisions: [
+        {
+          id: 'dec1',
+          date: '2024-06-01',
+          decision: 'Only one feature first draft is active at a time',
+          evidence: 'Feature 1 at 45 pages; Feature 2 and 3 not yet started to preserve focus and momentum',
+          alternativesConsidered: 'Parallel drafting (too scattered), predetermined schedule (not responsive to creative flow)',
+          revisitCondition: 'If Feature 1 hits a creative wall or if a time-sensitive opportunity requires rapid Feature 2 work',
+          status: 'Active',
+        },
+        {
+          id: 'dec2',
+          date: '2024-06-05',
+          decision: 'Writing session floor is 3 pages; non-writing days do not create a missed streak',
+          evidence: "Brady's creative cadence is inspiration-responsive; enforcing daily writing creates guilt without output",
+          alternativesConsidered: 'Daily streak (burnout risk), no minimum (inconsistency), variable minimums (too complicated)',
+          revisitCondition: 'If Brady reaches 50+ pages per session or if total output stalls for 4 weeks',
+          status: 'Active',
+        },
+        {
+          id: 'dec3',
+          date: '2024-06-10',
+          decision: 'Finished and released work outranks more ideation',
+          evidence: 'Five sketch ideas exist; three published. Focus is now on completing Feature 1 and building audience with existing work.',
+          alternativesConsidered: 'Generate more ideas (momentum loss), equal weight to idea and execution (neither completed well)',
+          revisitCondition: 'Never; this is foundational to the grassroots career path',
+          status: 'Active',
+        },
+        {
+          id: 'dec4',
+          date: '2024-06-12',
+          decision: 'Learning must end in a project artifact',
+          evidence: 'Acting class is paired with solo practice; class work informs scene and monologue work in scripts',
+          alternativesConsidered: 'Pure coursework (skills unused), learning as side activity (low priority)',
+          revisitCondition: 'If class ends or Brady shifts to production-heavy phase',
+          status: 'Active',
+        },
+      ],
+      financingSources: [],
+      projectBudget: 0,
+      committedFinancing: 0,
+      receivedFinancing: 0,
+      ownedAudienceEmail: 120,
+      ownedAudienceSMS: 45,
+      totalPublished: 3,
+      creativeRevenueEarned: 0,
+      notes: 'Starting grassroots career path with finished sketch work and Feature 1 in active draft.',
+    };
+
+    // ===== HELPER FUNCTIONS =====
+
+    function getCurrentStage(data) {
+      if (data.currentStageOverride) {
+        return data.currentStageOverride;
+      }
+      for (let i = 5; i >= 0; i--) {
+        const stageKey = `stage${i}`;
+        const stageGates = data.hardGates.filter((g) => g.stageKey === stageKey);
+        const expectedGates = STAGE_DEFINITIONS[stageKey] ? 1 : 0;
+        if (stageGates.length === 0) continue;
+        const completedGates = stageGates.filter((g) => g.completed).length;
+        if (completedGates < expectedGates) return stageKey;
+      }
+      return 'stage0';
+    }
+
+    function getActiveFeature(data) {
+      return data.featureScreenplays.find((f) => f.status === 'Drafting') || null;
+    }
+
+    function getPagesPerActiveDay(feature) {
+      if (feature.writingSessions.length === 0) return 0;
+      const totalPages = feature.writingSessions.reduce((sum, s) => sum + s.pagesWritten, 0);
+      return totalPages / feature.writingSessions.length;
+    }
+
+    function getStageCompletion(stageKey, data) {
+      const gates = data.hardGates.filter((g) => g.stageKey === stageKey);
+      if (gates.length === 0) return 0;
+      const completed = gates.filter((g) => g.completed).length;
+      return (completed / gates.length) * 100;
+    }
+
+    function saveData(data) {
+      const updated = { ...data, lastUpdated: new Date().toISOString() };
+      localStorage.setItem('actor-producer-os', JSON.stringify(updated));
+    }
+
+    function loadData() {
+      const stored = localStorage.getItem('actor-producer-os');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          return SEED_DATA;
+        }
+      }
+      return SEED_DATA;
+    }
+
+    // ===== COMPONENTS =====
+
+    function DailyCheckIn({ data, onUpdate }) {
+      const currentStage = getCurrentStage(data);
+      const stageInfo = STAGE_DEFINITIONS[currentStage];
+      const activeFeature = getActiveFeature(data);
+      const stageNum = currentStage.split('stage')[1];
+
+      return React.createElement(
+        'div',
+        { className: 'bg-white rounded border border-gray-200 p-6' },
+        React.createElement(
+          'div',
+          { className: 'border-b border-gray-200 pb-4 mb-4' },
+          React.createElement('h2', { className: 'text-xs font-bold uppercase tracking-wide text-gray-900 mb-2' }, 'Five Questions'),
+          React.createElement('p', { className: 'text-sm text-gray-600' }, 'Open this dashboard first.')
+        ),
+        React.createElement(
+          'div',
+          { className: 'space-y-6' },
+          // Q1
+          React.createElement(
+            'div',
+            null,
+            React.createElement('div', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-2' }, '1. What stage am I actually in?'),
+            React.createElement(
+              'div',
+              { className: 'bg-gray-50 border border-gray-300 rounded p-4' },
+              React.createElement(
+                'div',
+                { className: 'text-sm font-bold text-gray-900 mb-1' },
+                `Stage ${stageNum}: ${stageInfo.name}`
+              ),
+              React.createElement('div', { className: 'text-xs text-gray-600 mb-3' }, stageInfo.role),
+              React.createElement(
+                'div',
+                { className: 'text-xs text-gray-700 mb-2' },
+                React.createElement('span', { className: 'font-semibold' }, 'Bottom line: '),
+                stageInfo.bottomLine
+              ),
+              data.currentStageOverride &&
+                React.createElement('div', { className: 'text-xs text-orange-600 font-semibold' }, '⚠ Manual override active')
+            )
+          ),
+          // Q2 - Binding Constraint
+          React.createElement(
+            'div',
+            null,
+            React.createElement('div', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-2' }, '2. What is the one constraint holding back the next stage?'),
+            React.createElement(
+              'div',
+              { className: 'bg-orange-50 border-2 border-orange-400 rounded p-4' },
+              React.createElement(
+                'div',
+                { className: 'text-sm font-bold text-orange-900' },
+                '⚡ Build audience proof and owned-audience channel'
+              ),
+              React.createElement('div', { className: 'text-xs text-gray-600 mt-1' }, 'Rule #1 (Binding)')
+            )
+          ),
+          // Q3
+          React.createElement(
+            'div',
+            null,
+            React.createElement('div', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-2' }, '3. What should I do next?'),
+            activeFeature
+              ? React.createElement(
+                  'div',
+                  { className: 'bg-blue-50 border border-blue-300 rounded p-4' },
+                  React.createElement(
+                    'div',
+                    { className: 'text-sm font-bold text-blue-900 mb-2' },
+                    `Continue ${activeFeature.title}`
+                  ),
+                  React.createElement(
+                    'div',
+                    { className: 'text-xs text-gray-600' },
+                    `${activeFeature.currentPages} / ${activeFeature.targetPages} pages (${Math.round((activeFeature.currentPages / activeFeature.targetPages) * 100)}% complete)`
+                  ),
+                  React.createElement(
+                    'div',
+                    { className: 'text-xs text-gray-600 mt-1' },
+                    `Avg: ${getPagesPerActiveDay(activeFeature).toFixed(1)} pages per session`
+                  )
+                )
+              : React.createElement(
+                  'div',
+                  { className: 'bg-gray-50 border border-gray-300 rounded p-4' },
+                  React.createElement('div', { className: 'text-sm font-bold text-gray-900' }, 'No active writing session')
+                )
+          ),
+          // Q4
+          React.createElement(
+            'div',
+            null,
+            React.createElement('div', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-2' }, '4. What finished assets and leverage am I building?'),
+            React.createElement(
+              'div',
+              { className: 'grid grid-cols-3 gap-3' },
+              React.createElement(
+                'div',
+                { className: 'bg-gray-50 border border-gray-300 rounded p-3' },
+                React.createElement('div', { className: 'text-xs text-gray-600 mb-1' }, 'Published Work'),
+                React.createElement('div', { className: 'text-lg font-bold text-gray-900' }, data.totalPublished)
+              ),
+              React.createElement(
+                'div',
+                { className: 'bg-gray-50 border border-gray-300 rounded p-3' },
+                React.createElement('div', { className: 'text-xs text-gray-600 mb-1' }, 'Owned Audience'),
+                React.createElement(
+                  'div',
+                  { className: 'text-lg font-bold text-gray-900' },
+                  data.ownedAudienceEmail + data.ownedAudienceSMS
+                )
+              ),
+              React.createElement(
+                'div',
+                { className: 'bg-gray-50 border border-gray-300 rounded p-3' },
+                React.createElement('div', { className: 'text-xs text-gray-600 mb-1' }, 'Features in Progress'),
+                React.createElement(
+                  'div',
+                  { className: 'text-lg font-bold text-gray-900' },
+                  `${data.featureScreenplays.filter((f) => f.status !== 'Not Started').length} / 3`
+                )
+              )
+            )
+          ),
+          // Q5
+          React.createElement(
+            'div',
+            null,
+            React.createElement('div', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-2' }, '5. What facts prove I am ready to graduate?'),
+            React.createElement(
+              'div',
+              { className: 'bg-gray-50 border border-gray-300 rounded p-4' },
+              React.createElement('div', { className: 'text-xs font-semibold text-gray-700 mb-3' }, `Stage ${stageNum} Completion`),
+              React.createElement(
+                'div',
+                { className: 'w-full bg-gray-200 rounded-full h-2' },
+                React.createElement('div', {
+                  className: 'bg-orange-400 h-2 rounded-full transition-all',
+                  style: { width: `${Math.max(getStageCompletion(currentStage, data), 15)}%` },
+                })
+              ),
+              React.createElement('div', { className: 'text-xs text-gray-600 mt-2' }, 'Stage hard gates: Define in Settings')
+            )
+          )
+        )
+      );
+    }
+
+    function WritingModule({ data, onUpdate }) {
+      const [showNewSession, setShowNewSession] = useState(false);
+      const [sessionPages, setSessionPages] = useState('3');
+      const [sessionNotes, setSessionNotes] = useState('');
+      const activeFeature = getActiveFeature(data);
+
+      const handleAddSession = () => {
+        if (!activeFeature) return;
+        const updatedData = { ...data };
+        const feature = updatedData.featureScreenplays.find((f) => f.id === activeFeature.id);
+        if (!feature) return;
+
+        const pages = parseInt(sessionPages) || 3;
+        feature.currentPages += pages;
+        feature.writingSessions.push({
+          id: `ws${Date.now()}`,
+          featureId: feature.id,
+          date: new Date().toISOString().split('T')[0],
+          pagesWritten: pages,
+          notes: sessionNotes,
+        });
+
+        if (feature.currentPages >= feature.targetPages) {
+          feature.status = 'First Draft Complete';
+          feature.completedDate = new Date().toISOString();
+        }
+
+        saveData(updatedData);
+        onUpdate(updatedData);
+        setSessionPages('3');
+        setSessionNotes('');
+        setShowNewSession(false);
+      };
+
+      return React.createElement(
+        'div',
+        { className: 'bg-white rounded border border-gray-200 p-6' },
+        React.createElement('h2', { className: 'text-xs font-bold uppercase tracking-wide text-gray-900 mb-4 pb-3 border-b border-gray-200' }, 'Writing'),
+        React.createElement(
+          'div',
+          { className: 'space-y-6' },
+          // Features
+          React.createElement(
+            'div',
+            null,
+            React.createElement('h3', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-3' }, 'Feature Screenplays'),
+            React.createElement(
+              'div',
+              { className: 'space-y-3' },
+              data.featureScreenplays.map((feature, idx) =>
+                React.createElement(
+                  'div',
+                  {
+                    key: feature.id,
+                    className: `border rounded p-4 ${
+                      feature.status === 'Drafting'
+                        ? 'border-orange-300 bg-orange-50'
+                        : feature.status === 'First Draft Complete'
+                          ? 'border-green-300 bg-green-50'
+                          : 'border-gray-300 bg-gray-50'
+                    }`,
+                  },
+                  React.createElement(
+                    'div',
+                    { className: 'flex items-start justify-between mb-2' },
+                    React.createElement(
+                      'div',
+                      null,
+                      React.createElement('div', { className: 'text-sm font-bold text-gray-900' }, `Feature ${idx + 1}: ${feature.title}`),
+                      React.createElement('div', { className: 'text-xs text-gray-600' }, `${feature.genre} • ${feature.status}`)
+                    ),
+                    feature.status === 'Drafting' &&
+                      React.createElement(
+                        'span',
+                        { className: 'inline-block px-2 py-1 bg-orange-400 text-white text-xs font-bold rounded' },
+                        'ACTIVE'
+                      )
+                  ),
+                  React.createElement('div', { className: 'text-xs text-gray-600 mb-3 italic' }, `"${feature.logline}"`),
+                  React.createElement(
+                    'div',
+                    { className: 'flex items-center gap-4' },
+                    React.createElement(
+                      'div',
+                      { className: 'flex-1' },
+                      React.createElement(
+                        'div',
+                        { className: 'flex justify-between mb-1' },
+                        React.createElement('span', { className: 'text-xs font-semibold text-gray-700' }, 'Progress'),
+                        React.createElement('span', { className: 'text-xs text-gray-600' }, `${feature.currentPages} / ${feature.targetPages} pages`)
+                      ),
+                      React.createElement(
+                        'div',
+                        { className: 'w-full bg-gray-300 rounded-full h-2' },
+                        React.createElement('div', {
+                          className: 'bg-orange-400 h-2 rounded-full transition-all',
+                          style: { width: `${Math.min((feature.currentPages / feature.targetPages) * 100, 100)}%` },
+                        })
+                      )
+                    ),
+                    React.createElement('div', { className: 'text-xs text-gray-600' }, `${feature.writingSessions.length} sessions`)
+                  )
+                )
+              )
+            )
+          ),
+          // Add session
+          activeFeature &&
+            React.createElement(
+              'div',
+              { className: 'border border-gray-300 rounded p-4 bg-gray-50' },
+              !showNewSession
+                ? React.createElement(
+                    'button',
+                    {
+                      onClick: () => setShowNewSession(true),
+                      className: 'w-full px-3 py-2 bg-orange-400 text-white text-xs font-bold uppercase rounded hover:bg-orange-500 transition',
+                    },
+                    '+ Log Writing Session'
+                  )
+                : React.createElement(
+                    'div',
+                    { className: 'space-y-3' },
+                    React.createElement(
+                      'div',
+                      null,
+                      React.createElement('label', { className: 'block text-xs font-semibold text-gray-700 mb-1' }, 'Pages (minimum 3)'),
+                      React.createElement('input', {
+                        type: 'number',
+                        min: '3',
+                        value: sessionPages,
+                        onChange: (e) => setSessionPages(e.target.value),
+                        className: 'w-full px-2 py-1 border border-gray-300 rounded text-sm',
+                      })
+                    ),
+                    React.createElement(
+                      'div',
+                      null,
+                      React.createElement('label', { className: 'block text-xs font-semibold text-gray-700 mb-1' }, 'Notes (optional)'),
+                      React.createElement('textarea', {
+                        value: sessionNotes,
+                        onChange: (e) => setSessionNotes(e.target.value),
+                        className: 'w-full px-2 py-1 border border-gray-300 rounded text-sm',
+                        rows: 2,
+                      })
+                    ),
+                    React.createElement(
+                      'div',
+                      { className: 'flex gap-2' },
+                      React.createElement(
+                        'button',
+                        {
+                          onClick: handleAddSession,
+                          className: 'flex-1 px-3 py-2 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-700',
+                        },
+                        'Save'
+                      ),
+                      React.createElement(
+                        'button',
+                        {
+                          onClick: () => setShowNewSession(false),
+                          className: 'flex-1 px-3 py-2 bg-gray-400 text-white text-xs font-bold rounded hover:bg-gray-500',
+                        },
+                        'Cancel'
+                      )
+                    )
+                  )
+            ),
+          // Sketches
+          React.createElement(
+            'div',
+            null,
+            React.createElement('h3', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-3' }, 'Sketch Scripts'),
+            React.createElement(
+              'div',
+              { className: 'space-y-2' },
+              data.sketchScripts.map((sketch) =>
+                React.createElement(
+                  'div',
+                  { key: sketch.id, className: 'border border-gray-300 rounded p-3' },
+                  React.createElement(
+                    'div',
+                    { className: 'flex justify-between items-start mb-1' },
+                    React.createElement(
+                      'div',
+                      null,
+                      React.createElement('div', { className: 'text-sm font-semibold text-gray-900' }, sketch.title),
+                      React.createElement('div', { className: 'text-xs text-gray-600' }, sketch.genre)
+                    ),
+                    React.createElement(
+                      'span',
+                      {
+                        className: `text-xs px-2 py-1 rounded font-semibold ${
+                          sketch.status === 'Published'
+                            ? 'bg-green-100 text-green-800'
+                            : sketch.status === 'Produced'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
+                        }`,
+                      },
+                      sketch.status
+                    )
+                  ),
+                  React.createElement('div', { className: 'text-xs text-gray-600 italic mb-2' }, `"${sketch.logline}"`),
+                  sketch.link && React.createElement('a', { href: sketch.link, className: 'text-xs text-orange-600 hover:underline' }, 'View →')
+                )
+              )
+            )
+          )
+        )
+      );
+    }
+
+    function ActingModule({ data }) {
+      const actingClass = data.actingClass;
+
+      return React.createElement(
+        'div',
+        { className: 'bg-white rounded border border-gray-200 p-6' },
+        React.createElement('h2', { className: 'text-xs font-bold uppercase tracking-wide text-gray-900 mb-4 pb-3 border-b border-gray-200' }, 'Acting'),
+        actingClass
+          ? React.createElement(
+              'div',
+              { className: 'space-y-4' },
+              React.createElement(
+                'div',
+                { className: 'border border-gray-300 rounded p-4 bg-gray-50' },
+                React.createElement('div', { className: 'text-sm font-bold text-gray-900 mb-1' }, actingClass.title),
+                React.createElement('div', { className: 'text-xs text-gray-600 mb-3' }, `Instructor: ${actingClass.instructor}`),
+                React.createElement(
+                  'div',
+                  { className: 'flex flex-wrap gap-2 mb-3' },
+                  actingClass.focusAreas.map((area) =>
+                    React.createElement('span', { key: area, className: 'text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded' }, area)
+                  )
+                ),
+                React.createElement('div', { className: 'text-xs text-gray-700' }, React.createElement('strong', null, 'Sessions: '), `${actingClass.sessions.length} logged`)
+              ),
+              React.createElement(
+                'div',
+                null,
+                React.createElement('h3', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-2' }, 'Session History'),
+                React.createElement(
+                  'div',
+                  { className: 'space-y-2' },
+                  actingClass.sessions.map((session) =>
+                    React.createElement(
+                      'div',
+                      { key: session.id, className: 'border border-gray-200 rounded p-3' },
+                      React.createElement(
+                        'div',
+                        { className: 'flex justify-between items-start mb-2' },
+                        React.createElement('div', { className: 'text-xs font-semibold text-gray-900' }, session.classOrPractice),
+                        React.createElement('div', { className: 'text-xs text-gray-600' }, session.date)
+                      ),
+                      React.createElement(
+                        'div',
+                        { className: 'text-xs text-gray-600 mb-2' },
+                        React.createElement('span', { className: 'font-semibold' }, 'Focus: '),
+                        session.focusArea
+                      ),
+                      React.createElement('div', { className: 'text-xs text-gray-700 mb-2' }, session.notes),
+                      React.createElement(
+                        'div',
+                        { className: 'text-xs bg-green-50 border border-green-200 rounded p-2 text-green-900' },
+                        React.createElement('strong', null, 'Practice adjustment: '),
+                        session.practiceAdjustments
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          : React.createElement(
+              'div',
+              { className: 'text-center py-6' },
+              React.createElement('div', { className: 'text-sm text-gray-600' }, 'No acting class added yet')
+            )
+      );
+    }
+
+    function RelationshipsModule({ data }) {
+      const currentStage = getCurrentStage(data);
+
+      return React.createElement(
+        'div',
+        { className: 'bg-white rounded border border-gray-200 p-6' },
+        React.createElement('h2', { className: 'text-xs font-bold uppercase tracking-wide text-gray-900 mb-4 pb-3 border-b border-gray-200' }, 'Relationships'),
+        React.createElement(
+          'div',
+          { className: 'mb-4 p-3 bg-blue-50 border border-blue-300 rounded' },
+          React.createElement('div', { className: 'text-xs font-semibold text-blue-900 mb-1' }, 'Stage-Relevant Warm Relationships'),
+          React.createElement(
+            'div',
+            { className: 'text-xs text-blue-800' },
+            `${data.relationships.filter((r) => (r.warmth === 'Warm' || r.warmth === 'Active Collaborator') && r.stageRelevance.includes(currentStage)).length} active collaborators for ${STAGE_DEFINITIONS[currentStage].name}`
+          )
+        ),
+        React.createElement(
+          'div',
+          { className: 'space-y-3' },
+          data.relationships.map((rel) =>
+            React.createElement(
+              'div',
+              { key: rel.id, className: 'border border-gray-300 rounded p-3' },
+              React.createElement(
+                'div',
+                { className: 'flex justify-between items-start mb-2' },
+                React.createElement(
+                  'div',
+                  null,
+                  React.createElement('div', { className: 'text-sm font-bold text-gray-900' }, rel.name),
+                  React.createElement('div', { className: 'text-xs text-gray-600' }, `${rel.role} • ${rel.category}`)
+                ),
+                React.createElement(
+                  'span',
+                  {
+                    className: `text-xs px-2 py-1 rounded font-semibold ${
+                      rel.warmth === 'Active Collaborator'
+                        ? 'bg-green-100 text-green-800'
+                        : rel.warmth === 'Warm'
+                          ? 'bg-blue-100 text-blue-800'
+                          : rel.warmth === 'Familiar'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                    }`,
+                  },
+                  rel.warmth
+                )
+              ),
+              React.createElement('div', { className: 'text-xs text-gray-700 mb-2' }, rel.howBradyHelps),
+              React.createElement(
+                'div',
+                { className: 'text-xs text-gray-700 mb-2' },
+                'How they help: ',
+                rel.howTheyHelp
+              ),
+              React.createElement('div', { className: 'text-xs text-gray-600' }, 'Last interaction: ', React.createElement('strong', null, rel.lastInteraction)),
+              React.createElement('div', { className: 'text-xs text-gray-600 mt-1' }, 'Next: ', React.createElement('strong', null, `${rel.nextAction} by ${rel.nextActionDate}`))
+            )
+          )
+        )
+      );
+    }
+
+    function SettingsPanel({ data, onUpdate }) {
+      const handleExport = () => {
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `actor-producer-os-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      const handleImport = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const imported = JSON.parse(event.target.result);
+              saveData(imported);
+              onUpdate(imported);
+              alert('Data imported successfully!');
+            } catch {
+              alert('Invalid file format');
+            }
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      };
+
+      const handleOverride = (stageKey) => {
+        const updated = { ...data, currentStageOverride: data.currentStageOverride === stageKey ? null : stageKey };
+        saveData(updated);
+        onUpdate(updated);
+      };
+
+      const currentStage = getCurrentStage(data);
+
+      return React.createElement(
+        'div',
+        { className: 'bg-white rounded border border-gray-200 p-6' },
+        React.createElement('h2', { className: 'text-xs font-bold uppercase tracking-wide text-gray-900 mb-4 pb-3 border-b border-gray-200' }, 'Settings'),
+        React.createElement(
+          'div',
+          { className: 'space-y-6' },
+          React.createElement(
+            'div',
+            null,
+            React.createElement('h3', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-3' }, 'Stage Override'),
+            React.createElement(
+              'div',
+              { className: 'space-y-2' },
+              Object.entries(STAGE_DEFINITIONS).map(([key, def]) =>
+                React.createElement(
+                  'button',
+                  {
+                    key: key,
+                    onClick: () => handleOverride(key),
+                    className: `block w-full text-left px-3 py-2 rounded border text-xs ${
+                      data.currentStageOverride === key
+                        ? 'border-orange-400 bg-orange-100 font-semibold'
+                        : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+                    }`,
+                  },
+                  `Stage ${key.split('stage')[1]}: ${def.name}${data.currentStageOverride === key ? ' [OVERRIDE]' : ''}`
+                )
+              )
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'border-t border-gray-200 pt-6' },
+            React.createElement('h3', { className: 'text-xs font-bold uppercase tracking-wide text-gray-700 mb-3' }, 'Backup & Restore'),
+            React.createElement(
+              'div',
+              { className: 'space-y-2' },
+              React.createElement(
+                'button',
+                {
+                  onClick: handleExport,
+                  className: 'w-full px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded hover:bg-blue-700',
+                },
+                '↓ Export Data'
+              ),
+              React.createElement(
+                'button',
+                {
+                  onClick: handleImport,
+                  className: 'w-full px-4 py-2 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-700',
+                },
+                '↑ Import Data'
+              )
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'border-t border-gray-200 pt-6 text-xs text-gray-600' },
+            React.createElement('div', { className: 'mb-2' }, React.createElement('strong', null, 'Schema Version: '), data.schemaVersion),
+            React.createElement('div', null, React.createElement('strong', null, 'Last Updated: '), new Date(data.lastUpdated).toLocaleString())
+          )
+        )
+      );
+    }
+
+    // ===== MAIN APP =====
+
+    function App() {
+      const [data, setData] = useState(loadData());
+      const [activeTab, setActiveTab] = useState('dashboard');
+
+      const handleDataUpdate = (newData) => {
+        setData(newData);
+      };
+
+      const currentStage = getCurrentStage(data);
+      const stageName = STAGE_DEFINITIONS[currentStage].name;
+
+      return React.createElement(
+        React.Fragment,
+        null,
+        // Header
+        React.createElement(
+          'div',
+          { className: 'bg-gradient-to-r from-navy-900 to-gray-900 text-white px-6 py-8' },
+          React.createElement(
+            'div',
+            { className: 'max-w-7xl mx-auto' },
+            React.createElement(
+              'div',
+              { className: 'flex items-center justify-between' },
+              React.createElement(
+                'div',
+                null,
+                React.createElement('h1', { className: 'text-3xl font-bold uppercase tracking-tight' }, 'Actor / Producer OS'),
+                React.createElement('p', { className: 'text-sm text-gray-300 mt-1' }, `Career decision engine for ${stageName}`)
+              ),
+              React.createElement('div', { className: 'text-orange-400 text-3xl' }, '▬')
+            )
+          )
+        ),
+        // Nav
+        React.createElement(
+          'div',
+          { className: 'border-b border-gray-300 bg-gray-50 sticky top-0 z-10' },
+          React.createElement(
+            'div',
+            { className: 'max-w-7xl mx-auto px-6' },
+            React.createElement(
+              'div',
+              { className: 'flex gap-1 overflow-x-auto' },
+              [
+                { id: 'dashboard', label: 'Daily Checkin' },
+                { id: 'writing', label: 'Writing' },
+                { id: 'acting', label: 'Acting' },
+                { id: 'relationships', label: 'Relationships' },
+                { id: 'settings', label: 'Settings' },
+              ].map((tab) =>
+                React.createElement(
+                  'button',
+                  {
+                    key: tab.id,
+                    onClick: () => setActiveTab(tab.id),
+                    className: `px-4 py-3 text-xs font-bold uppercase tracking-wide border-b-2 transition ${
+                      activeTab === tab.id
+                        ? 'border-orange-400 text-orange-600'
+                        : 'border-transparent text-gray-600 hover:text-gray-900'
+                    }`,
+                  },
+                  tab.label
+                )
+              )
+            )
+          )
+        ),
+        // Content
+        React.createElement(
+          'div',
+          { className: 'max-w-7xl mx-auto px-6 py-8' },
+          activeTab === 'dashboard' && DailyCheckIn({ data, onUpdate: handleDataUpdate }),
+          activeTab === 'writing' && WritingModule({ data, onUpdate: handleDataUpdate }),
+          activeTab === 'acting' && ActingModule({ data }),
+          activeTab === 'relationships' && RelationshipsModule({ data }),
+          activeTab === 'settings' && SettingsPanel({ data, onUpdate: handleDataUpdate })
+        ),
+        // Footer
+        React.createElement(
+          'div',
+          { className: 'border-t border-gray-300 bg-gray-50 mt-12 py-6' },
+          React.createElement(
+            'div',
+            { className: 'max-w-7xl mx-auto px-6 text-center text-xs text-gray-600' },
+            React.createElement('p', null, 'Data persists locally in your browser. Backup regularly via Settings.')
+          )
+        )
+      );
+    }
+
+    // ===== RENDER =====
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>
